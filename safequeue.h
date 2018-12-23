@@ -7,37 +7,40 @@
 #include <iostream>
 
 template<class T,size_t SIZE = 5>
-class Safe_queue {
+class SafeQueue {
 
 public:
-    Safe_queue();
-    ~Safe_queue();
+    SafeQueue();
+    ~SafeQueue();
+
     T pop();
     void push(T &);
-    /*void isEmpty();*/
+    
 private:
-    std::queue <T> the_queue;
+    
+    std::queue <T> m_queue;
     pthread_mutex_t lock;
     sem_t pushSem;
     sem_t popSem;
+    
     void initSynchronized();
     void freeSynchronized();
 
 };
 
 template< class T, size_t SIZE >
-Safe_queue <T,SIZE>::Safe_queue()
+SafeQueue <T,SIZE>::SafeQueue()
 {
     initSynchronized();
 }
 
 template< class T, size_t SIZE >
-Safe_queue <T,SIZE>::~Safe_queue()
+SafeQueue <T,SIZE>::~SafeQueue()
 {
     freeSynchronized();
 }
 template< class T, size_t SIZE >
-void Safe_queue <T,SIZE>::initSynchronized()
+void SafeQueue <T,SIZE>::initSynchronized()
 {
     sem_init(&pushSem, 0, SIZE);
     sem_init(&popSem, 0, 0);
@@ -46,7 +49,7 @@ void Safe_queue <T,SIZE>::initSynchronized()
 }
 
 template< class T, size_t SIZE >
-void Safe_queue <T,SIZE>::freeSynchronized()
+void SafeQueue <T,SIZE>::freeSynchronized()
 {
     sem_destroy(&pushSem);
     sem_destroy(&popSem);
@@ -55,22 +58,24 @@ void Safe_queue <T,SIZE>::freeSynchronized()
 }
 
 template< class T, size_t SIZE >
-void Safe_queue<T,SIZE>::push(T & item){
+void SafeQueue<T,SIZE>::push(T & item){
+
     sem_wait(&pushSem);
     pthread_mutex_lock(&lock);
 
-    the_queue.push(item);
+    m_queue.push(item);
 
     pthread_mutex_unlock(&lock);
     sem_post(&popSem);
 }
 template< class T, size_t SIZE >
-T Safe_queue<T,SIZE>::pop(){
+T SafeQueue<T,SIZE>::pop(){
     T temp;
     sem_wait(&popSem);
     pthread_mutex_lock(&lock);
 
-    temp = the_queue.pop();
+    temp = m_queue.front();
+    m_queue.pop();
 
     pthread_mutex_unlock(&lock);
     sem_post(&pushSem);
