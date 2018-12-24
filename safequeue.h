@@ -39,12 +39,20 @@ SafeQueue <T,SIZE>::~SafeQueue()
 {
     freeSynchronized();
 }
+
 template< class T, size_t SIZE >
 void SafeQueue <T,SIZE>::initSynchronized()
 {
-    sem_init(&pushSem, 0, SIZE);
-    sem_init(&popSem, 0, 0);
-    pthread_mutex_init(&lock, NULL);
+    int status1, status2, status3;
+    status1 = sem_init(&pushSem, 0, SIZE);
+    status2 = sem_init(&popSem, 0, 0);
+    status3 = pthread_mutex_init(&lock, NULL);
+    if((status1 == -1) || (status2 == -1) || (status3 != 0))
+    {
+        std::cout<<"\n init synchronized failed";
+        freeSynchronized();
+        throw std::invalid_argument(" init synchronized failed ");
+    }
 
 }
 
@@ -68,6 +76,7 @@ void SafeQueue<T,SIZE>::push(const T & item){
     pthread_mutex_unlock(&lock);
     sem_post(&popSem);
 }
+
 template< class T, size_t SIZE >
 T SafeQueue<T,SIZE>::pop(){
     T temp;
@@ -79,6 +88,7 @@ T SafeQueue<T,SIZE>::pop(){
 
     pthread_mutex_unlock(&lock);
     sem_post(&pushSem);
+
     return temp;
 }
 #endif
