@@ -14,7 +14,7 @@ public:
     ~SafeQueue();
 
     T pop();
-    void push(T &);
+    void push(const T &);
     
 private:
     
@@ -58,7 +58,7 @@ void SafeQueue <T,SIZE>::freeSynchronized()
 }
 
 template< class T, size_t SIZE >
-void SafeQueue<T,SIZE>::push(T & item){
+void SafeQueue<T,SIZE>::push(const T & item){
 
     sem_wait(&pushSem);
     pthread_mutex_lock(&lock);

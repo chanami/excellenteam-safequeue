@@ -1,7 +1,7 @@
 
 #include <iostream>
 #include "safequeue.h"
-
+#define NUM_OF_THREADS 10
 
 using namespace std;
 
@@ -15,10 +15,10 @@ void *PushRun(void *queue)
     struct arg_struct *args = (arg_struct*)queue;
 
 
-    int i=0;
-    while(i < 10)
+    int i=-1;
+    while(i < NUM_OF_THREADS)
     {
-        std::cout<<"thread --> " << args->arg2 << std::endl;
+        std::cout<<"thread --> " << args->arg2 <<" PUSH"<<std::endl;
         (*(SafeQueue<int>*)args->arg1).push(++i) ;
     }
     
@@ -28,10 +28,11 @@ void *PushRun(void *queue)
 void *PopRun(void *queue)
 {
     struct arg_struct *args = (arg_struct*)queue;
-    int i=0;
-    while( ++i < 10)
+
+    int i=-1;
+    while( ++i < NUM_OF_THREADS)
     {
-        std::cout<<"thread --> " << args->arg2 << std::endl;
+        std::cout<<"thread --> " << args->arg2 << " POP ";
         std::cout << (*(SafeQueue<int>*)args->arg1).pop()<< std::endl;
     }
     return 0;
@@ -55,9 +56,9 @@ void test_push()
 void test_2_threads()
 {
     pthread_t t1, t2;
-
-    SafeQueue<int> * sQueue = new SafeQueue<int>();
     struct arg_struct args1,args2;
+    SafeQueue<int> * sQueue = new SafeQueue<int>();
+
     args1.arg1 = sQueue;
     args1.arg2 = 1;
 
